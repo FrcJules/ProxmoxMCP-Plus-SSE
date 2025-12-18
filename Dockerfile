@@ -5,10 +5,7 @@ FROM python:3.11-slim
 WORKDIR /app
 
 # Install system dependencies
-RUN apt-get update && apt-get install -y \
-    git \
-    curl \
-    && rm -rf /var/lib/apt/lists/*
+RUN apt-get update && apt-get install -y     git     curl     && rm -rf /var/lib/apt/lists/*
 
 # Install Python dependencies
 RUN pip install mcpo uv
@@ -17,18 +14,13 @@ RUN pip install mcpo uv
 COPY . .
 
 # Create virtual environment and install dependencies
-RUN uv venv && \
-    . .venv/bin/activate && \
-    uv pip install -e ".[dev]"
+RUN uv venv &&     . .venv/bin/activate &&     uv pip install -e ".[dev]"
+
+# Make entrypoint executable
+RUN chmod +x /app/entrypoint.sh
 
 # Expose port
 EXPOSE 8811
 
-# Set environment variables
-ENV PROXMOX_MCP_CONFIG="/app/proxmox-config/config.json"
-ENV API_HOST="0.0.0.0"
-ENV API_PORT="8811"
-
-# Startup command
-CMD ["mcpo", "--host", "0.0.0.0", "--port", "8811", "--", \
-     "/bin/bash", "-c", "cd /app && source .venv/bin/activate && python -m proxmox_mcp.server"]
+# Use entrypoint script
+CMD ["/app/entrypoint.sh"]
